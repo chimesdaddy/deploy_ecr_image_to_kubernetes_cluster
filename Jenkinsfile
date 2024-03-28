@@ -6,8 +6,8 @@ pipeline{
     stages{
         stage('CompileandRunSonarAnalysis') {
             steps {	
-		    withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-    sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=tech365sec1 -Dsonar.organization=tech365sec1 -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN'
+		    withCredentials([string(credentialsId: 'SONAR_MEX', variable: 'SONAR_MEX')]) {
+    sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=mexdevsec -Dsonar.organization=mexdevsec -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_MEX'
 }
 
 		
@@ -15,7 +15,7 @@ pipeline{
         } 
 	    stage('RunSCAAnalysisUsingSnyk') {
             steps {		
-				withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
+				withCredentials([string(credentialsId: 'MEX_SNYK', variable: 'MEX_SNYK')]) {
 					sh 'mvn snyk:test -fn'
 				}
 			}
@@ -23,10 +23,10 @@ pipeline{
         stage('Build'){
             steps{
                 withDockerRegistry(
-                    [credentialsId:"dockerlogin", url: ""]
+                    [credentialsId:"MEX_DOCKER", url: ""]
                 )  {
                     script{
-                    app = docker.build("asg")
+                    app = docker.build("mexnew")
                     }
                 }
             }
@@ -35,7 +35,7 @@ pipeline{
         stage('Push'){
             steps{
                 script{
-                    docker.withRegistry("https://924338258393.dkr.ecr.us-east-1.amazonaws.com", "ecr:us-east-1:aws-credentials"){
+                    docker.withRegistry("https://211125785579.dkr.ecr.us-east-1.amazonaws.com", "ecr:us-east-1:MEX_AWS"){
                         app.push("latest")
                     }
                     
@@ -44,14 +44,19 @@ pipeline{
             }
         }
 
-          stage('Kubernetes Deployment of Easy Buggy Web Application') {
-	   steps {
-	      withKubeConfig([credentialsId: 'kubelogin']) {
-		  sh('kubectl delete all --all -n devsecops')
-		  sh ('kubectl apply -f deployment.yaml --namespace=devsecops')
-		}
-	      }
-   	}
+        stage('Kubernetes Deployment of Easy Buggy Web Application') {
+            steps {
+                withKubeConfig([credentialsId: 'kubelogin']) {
+                sh('kubectl delete all --all -n devsecops')
+                sh ('kubectl apply -f deployment.yaml --namespace=devsecops')
+                }
+                }
+            }
+            }
+
+            
+        }
+
     }
 
     
