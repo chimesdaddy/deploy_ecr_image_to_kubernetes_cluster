@@ -13,7 +13,7 @@ pipeline{
 		
 			}
         } 
-	stage('Build'){
+	    stage('Build'){
             steps{
                 withDockerRegistry(
                     [credentialsId:"MEX_DOCKER", url: ""]
