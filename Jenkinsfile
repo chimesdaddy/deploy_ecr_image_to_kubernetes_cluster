@@ -13,6 +13,13 @@ pipeline{
 		
 			}
         } 
+	    stage('RunSCAAnalysisUsingSnyk') {
+            steps {		
+				withCredentials([string(credentialsId: 'MEX_SNYK', variable: 'MEX_SNYK')]) {
+					sh 'mvn snyk:test -fn'
+				}
+			}
+    } 
 	    stage('Build'){
             steps{
                 withDockerRegistry(
